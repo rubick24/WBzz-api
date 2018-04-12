@@ -2,8 +2,6 @@ import requests
 import base64
 import re
 import json
-from configparser import ConfigParser
-
 
 def login(username, password):
     su = base64.b64encode(username.encode('utf-8')).decode('utf-8')
@@ -51,8 +49,11 @@ def profile(con, query_id):
             user['gender'] = resu['gender']
             user['description'] = resu['description']
             user['profile_image_url'] = resu['profile_image_url']
+            user['fans_count'] = resu['followers_count']
+            user['follow_count'] = resu['follow_count']
     except Exception as e:
         print(e)
+        return {}
 
     if 'uid' in user.keys():
         response = s.get(addr_url.format(query_id))
@@ -69,12 +70,12 @@ def crawl(con, query_id):
     fans_url = 'https://m.weibo.cn/api/container/getIndex?containerid=231051_-_fans_-_{}&type=all&since_id={}'
     followers_url = 'https://m.weibo.cn/api/container/getIndex?containerid=231051_-_followers_-_{}&page={}'
 
-    fans_result = []
+    followers_result = []
     result = []
 
     since_id = 1
     while True:
-        res = s.get(fans_url.format(query_id, str(since_id)))
+        res = s.get(followers_url.format(query_id, str(since_id)))
         res_json = res.json()
         if not len(res_json['data']['cards'])>0:
             break
@@ -82,20 +83,20 @@ def crawl(con, query_id):
             if 'card_group' in card.keys():
                 for user in card['card_group']:
                     if 'user' in user.keys():
-                        fans_result.append(user['user']['id'])
+                        followers_result.append(user['user']['id'])
         since_id += 1
 
 
     page = 1
     while True:
-        res = s.get(followers_url.format(query_id, str(page)))
+        res = s.get(fans_url.format(query_id, str(page)))
         res_json = res.json()
         if not len(res_json['data']['cards'])>0:
             break
         for card in res_json['data']['cards']:
             if 'card_group' in card.keys():
                 for user in card['card_group']:
-                    if 'user' in user.keys() and user['user']['id'] in fans_result:
+                    if 'user' in user.keys() and user['user']['id'] in followers_result:
                         result.append({
                             'uid': user['user']['id'],
                             'screen_name': user['user']['screen_name'],
@@ -150,14 +151,14 @@ def with_addr(con, result):
     return result
 
 if __name__ == '__main__':
-    cfg = ConfigParser()
-    cfg.read('.env')
-    username = cfg.get('account','username')
-    password = cfg.get('account','password')
-
-    con = login(username,password)
-    result = search_by_name(con, 'Deadalus_')
-    print('count: ', len(result))
+    man = """
+Usage:
+        con  login(username, password),
+  user_list  profile(con, query_id),
+       user  search_by_name(con, query_name),
+  user_list  with_addr(con, user_list)
+        """
+    print(man)
 
 
 # foo = [{'id':1,'name':'a'},{'id':2,'name':'b'}]
