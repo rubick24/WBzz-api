@@ -102,7 +102,9 @@ def crawl(con, query_id):
                             'screen_name': user['user']['screen_name'],
                             'gender': user['user']['gender'],
                             'description': user['user']['description'],
-                            'profile_image_url': user['user']['profile_image_url']
+                            'profile_image_url': user['user']['profile_image_url'],
+                            'fans_count': user['user']['followers_count'],
+                            'follow_count': user['user']['follow_count']
                         })
                         print(user['user']['id'],user['user']['screen_name'])
         page += 1
@@ -131,7 +133,9 @@ def search_by_name(con, query_name):
                             'screen_name': user['user']['screen_name'],
                             'gender': user['user']['gender'],
                             'description': user['user']['description'],
-                            'profile_image_url': user['user']['profile_image_url']
+                            'profile_image_url': user['user']['profile_image_url'],
+                            'fans_count': user['user']['followers_count'],
+                            'follow_count': user['user']['follow_count']
                         })
                         print(user['user']['id'],user['user']['screen_name'])
         page += 1
