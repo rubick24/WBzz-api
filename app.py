@@ -16,28 +16,25 @@ def hello_world():
     return 'Hello, World!'
 
 @app.route('/api/uid/<uid>', methods=['GET'])
-def wbzzapi(uid):
+def user_profile(uid):
     uid = uid.strip()
     if not uid:
         return json.dumps({
-            'error': 1,
             'msg': 'uid is required'
-        })
+        }),400
 
     con = spider.login(username, password)
     user = spider.profile(con, uid)
 
     if 'uid' not in user.keys():
         return json.dumps({
-            'error': 2,
             'msg': 'user uid {} not exist'.format(uid)
-        })
+        }),404
 
     if int(user['fans_count']) > count_limit or int(user['follow_count']) > count_limit:
         return json.dumps({
-            'error': 3,
             'msg': 'user fans({}) or follows({}) count limit exceed'.format(user['fans_count'], int(user['follow_count']))
-        })
+        }),403
 
     res = spider.crawl(con, uid)
     with_addr = request.args.get('with_addr', '')
@@ -46,12 +43,9 @@ def wbzzapi(uid):
         res = spider.with_addr(con, res)
 
     return json.dumps({
-        'error': 0,
-        'data': {
-            'user': user,
-            'circle': res
-        }
-    })
+        'user': user,
+        'circle': res
+    }),200
 
 
 
@@ -60,9 +54,8 @@ def search_user(name):
     name = name.strip()
     if not name:
         return json.dumps({
-            'error': 2,
             'msg': 'name is required'
-        })
+        }),400
 
     con = spider.login(username, password)
     res = spider.search_by_name(con, name)
@@ -73,11 +66,7 @@ def search_user(name):
 
     if len(res) < 1:
         return json.dumps({
-            'error': 1,
             'msg': 'empty result'
-        })
+        }),404
 
-    return json.dumps({
-        'error': 0,
-        'data': res
-    })
+    return json.dumps(res),200
