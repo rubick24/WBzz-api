@@ -23,8 +23,8 @@ def user_profile(uid):
             'msg': 'uid is required'
         }),400
 
-    con = spider.login(username, password)
-    user = spider.profile(con, uid)
+    s = spider.start_session()
+    user = spider.profile(s, uid)
 
     if 'uid' not in user.keys():
         return json.dumps({
@@ -36,11 +36,11 @@ def user_profile(uid):
             'msg': 'user fans({}) or follows({}) count limit exceed'.format(user['fans_count'], int(user['follow_count']))
         }),403
 
-    res = spider.crawl(con, uid)
+    res = spider.crawl(s, uid)
     with_addr = request.args.get('with_addr', '')
 
     if with_addr and int(with_addr) is 1:
-        res = spider.with_addr(con, res)
+        res = spider.with_addr(s, res)
 
     return json.dumps({
         'user': user,
@@ -57,12 +57,12 @@ def search_user(name):
             'msg': 'name is required'
         }),400
 
-    con = spider.login(username, password)
-    res = spider.search_by_name(con, name)
+    s = spider.start_session()
+    res = spider.search_by_name(s, name)
     with_addr = request.args.get('with_addr', '')
 
     if with_addr and int(with_addr) is 1:
-        res = spider.with_addr(con, res)
+        res = spider.with_addr(s, res)
 
     if len(res) < 1:
         return json.dumps({
